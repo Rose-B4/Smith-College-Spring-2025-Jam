@@ -1988,6 +1988,32 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &251762858 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 202924856533607517, guid: 9867b309c98c2f54e8cc79a3eab47874, type: 3}
+  m_PrefabInstance: {fileID: 713932544816824186}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &251762861
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 251762858}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 460cfa5b35266e942bf62a7287f2091e, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &261590956
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2648,6 +2674,22 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2093895058306856710, guid: 9867b309c98c2f54e8cc79a3eab47874, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 1705031758, guid: 9fe2aaa089ca49446ba2027dd63a1e2d, type: 3}
+    - target: {fileID: 2093895058306856710, guid: 9867b309c98c2f54e8cc79a3eab47874, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2093895058306856710, guid: 9867b309c98c2f54e8cc79a3eab47874, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2093895058306856710, guid: 9867b309c98c2f54e8cc79a3eab47874, type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2093895058306856710, guid: 9867b309c98c2f54e8cc79a3eab47874, type: 3}
       propertyPath: m_SortingOrder
       value: -1
       objectReference: {fileID: 0}
@@ -2706,7 +2748,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 202924856533607517, guid: 9867b309c98c2f54e8cc79a3eab47874, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 251762861}
   m_SourcePrefab: {fileID: 100100000, guid: 9867b309c98c2f54e8cc79a3eab47874, type: 3}
 --- !u!1001 &3803100107589073092
 PrefabInstance:
