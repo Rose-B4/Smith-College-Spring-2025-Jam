@@ -22,8 +22,7 @@ public class Player_Controller : MonoBehaviour
 	protected Vector2 leftCenter => new Vector2(transform.position.x-(transform.localScale.x*boxCollider.size.x/2), transform.position.y);
 	protected Vector2 rightCenter => new Vector2(transform.position.x+(transform.localScale.x*boxCollider.size.x/2), transform.position.y);
 	protected Vector2 verticalRaySize => new Vector2(transform.localScale.x*boxCollider.size.x, colliderOffset);
-	// protected int wallLayerMask;
-	protected int floorLayerMask;
+	protected int wallLayerMask;
 	protected RaycastHit2D rayToGround;
 	protected RaycastHit2D rayToCeiling;
 	protected RaycastHit2D rayToLeftWall;
@@ -122,12 +121,9 @@ public class Player_Controller : MonoBehaviour
 		Application.targetFrameRate = 60; // set the max fps
 
 		rb = GetComponent<Rigidbody2D>();
-		// boxCollider = GetComponent<BoxCollider2D>();
 		spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
-		floorLayerMask = LayerMask.GetMask("Walls");
-
-		// Cursor.visible = false;
+		wallLayerMask = LayerMask.GetMask("Walls");
 	}
 
 	// Update is called once per frame
@@ -257,12 +253,12 @@ public class Player_Controller : MonoBehaviour
 
 #region Physics
 	void RayCast() { // this method does all of the collision checking for the character controller
-		rayToCeiling = Physics2D.BoxCast(topCenter, verticalRaySize, 0, Vector2.up, colliderOffset, floorLayerMask);
-		rayToGround = Physics2D.BoxCast(bottomCenter, verticalRaySize, 0, Vector2.down, 100, floorLayerMask);
+		rayToCeiling = Physics2D.BoxCast(topCenter, verticalRaySize, 0, Vector2.up, colliderOffset, wallLayerMask);
+		rayToGround = Physics2D.BoxCast(bottomCenter, verticalRaySize, 0, Vector2.down, 100, wallLayerMask);
 		
-		rayToLeftWall = Physics2D.Raycast(leftCenter, Vector2.left, 100, floorLayerMask);
+		rayToLeftWall = Physics2D.Raycast(leftCenter, Vector2.left, 100, wallLayerMask);
 		distanceToLeftWall = FindRayDistance(rayToLeftWall);
-		rayToRightWall = Physics2D.Raycast(rightCenter, Vector2.right, 100, floorLayerMask);
+		rayToRightWall = Physics2D.Raycast(rightCenter, Vector2.right, 100, wallLayerMask);
 		distanceToRightWall = FindRayDistance(rayToRightWall);
 	}
 
@@ -436,8 +432,8 @@ public class Player_Controller : MonoBehaviour
 	// ----------------------------------------------------------------------------------------------------------------
 #endregion
 
-#region Take Damage
-	public void TakeDamage(int damage) { // this method is called by enemies when they come into contact with the player
+#region Die
+	public void Die() { // this method is called by enemies when they come into contact with the player
 		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
 #endregion

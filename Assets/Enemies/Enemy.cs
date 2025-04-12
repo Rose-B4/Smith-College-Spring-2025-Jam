@@ -16,8 +16,6 @@ public class Enemy : MonoBehaviour
 
     protected int layerMask;
 
-    [SerializeField] protected int health = 5;
-    [SerializeField] protected int damage = 1;
     [SerializeField] protected float moveSpeed;
     [SerializeField] protected GameObject deathParticle;
 
@@ -78,7 +76,7 @@ public class Enemy : MonoBehaviour
             Destroy(gameObject);
         }
         else if(other.tag == "Player") {
-            other.GetComponent<Player_Controller>().TakeDamage(damage);
+            other.GetComponent<Player_Controller>().Die();
         }
     }
 }
