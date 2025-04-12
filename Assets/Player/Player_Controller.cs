@@ -424,6 +424,45 @@ public class Player_Controller : MonoBehaviour
 		boxCollider.size = colliderSize;
 	}
 
+	// Below is a version of the dash method that allows for directional dashing --------------------------------------
+
+	// 	IEnumerator DirectionalDash() {
+	// 	currentlyDashing = true;
+	// 	remainingDashes --;
+		
+	// 	if(frameInput.Move.x == 0 && frameInput.Move.y == 0) { // if the player is not inputting a direction
+	// 		frameInput.Move.x = 1; // force an inputted direction for this frame only
+	// 		if(spriteRenderer.flipX) { // if they are facing left
+	// 			frameInput.Move.x = -1; // make the input go left
+	// 		}
+	// 	}
+
+	// 	float dashAmount = dashVelocity; // store the amount the player should dash
+	// 	if (frameInput.Move.x != 0 && frameInput.Move.y != 0) { // if the player is dashing at an angle
+	// 		dashAmount *= root2Over2; // reduce the dash amount by sqrt(2)/2 because of Pythagorean Theorem
+	// 	}
+
+	// 	if (frameInput.Move.y < 0 && Mathf.Sign(frameInput.Move.x) == Mathf.Sign(velocity.x) && !isGrounded) { // if the player dashes down at an angle
+	// 		velocity.x += frameInput.Move.x * dashAmount; // add the speed instead of setting it
+	// 	}
+	// 	else {
+	// 		velocity.x = frameInput.Move.x * dashAmount;
+	// 	}
+
+	// 	velocity.y = frameInput.Move.y * dashAmount;
+	// 	velocity.y = 0;
+
+	// 	Vector2 storedVelocity = velocity; // store the current velocity of the player
+	// 	for(int i=0; i<dashStartPause; i++) { // pause for a few frames at the start of the dash to add weight to it
+	// 		velocity = Vector2.zero;
+	// 		yield return new WaitForFixedUpdate();
+	// 	}
+	// 	// Instantiate(dashGhost, transform.parent); // spawn the dash ghost sprite
+	// 	velocity = storedVelocity; // resume movement
+
+	// 	StartCoroutine(DashTimer());
+	// }
+	// ----------------------------------------------------------------------------------------------------------------
 #endregion
 
 #region Attack
