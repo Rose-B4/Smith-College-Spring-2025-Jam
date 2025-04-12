@@ -55,7 +55,6 @@ public class Enemy : MonoBehaviour
             sprite.flipX = ! sprite.flipX;
         }
 
-        isPaused = player.inImpactFrames;
         if(!isPaused && !wasPausedLastFrame) {
             rb.velocity = new Vector3(velocity.x, rb.velocity.y) / (60*Time.deltaTime);
         }

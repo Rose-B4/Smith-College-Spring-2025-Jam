@@ -41,18 +41,6 @@ public class Player_Controller : MonoBehaviour
 	//---------------------------------------------------------------
 
 	// serialized constant variables---------------------------------
-	[Header("Combat")]
-		[SerializeField] protected int health = 3;
-		[SerializeField] protected int meleeDamage = 2;
-		[SerializeField] protected int rangedDamage = 1;
-		[Tooltip("The number of frames the game should freeze for when the player takes damage")]
-		[SerializeField] protected int impactFrames = 10;
-		[Tooltip("The number of frames the player should freeze for when shooting a projectile")]
-		[SerializeField] protected int projectileImpactFrames = 15;
-		[Tooltip("The number of frames the player must wait before shooting again")]
-		[SerializeField] protected int timeBetweenShots = 15;
-		[Tooltip("The number of frames the player is invulnerable for after taking damage")]
-		[SerializeField] protected int invulnerabilityFrames = 75;
 	[Header("Movement")]
 		[Tooltip("The speed at which the player walks, bigger number means they walk faster")]
 		[SerializeField] [Range(0,10)] protected float walkSpeed = 4;
@@ -97,23 +85,17 @@ public class Player_Controller : MonoBehaviour
 		[SerializeField] [Range(0,0.5f)] protected float stickDeadZone = 0.01f;
 	[Header("Misc")]
 		[SerializeField] protected GameObject jumpParticle;
-		[SerializeField] protected GameObject attackObject;
-		[SerializeField] protected GameObject rangedAttackObject;
-		[SerializeField] protected GameObject takeDamageParticle;
 	//---------------------------------------------------------------
 
 	// state variables-----------------------------------------------
 	protected int remainingCoyoteTime;
 	protected int remainingDashes;
 	protected int timeSinceLastDash = 60;
-	protected int timeSinceLastShot = 60;
-	protected int timeSinceLastDamage;
 	protected float downwardsAcceleration;
 	protected float targetFallSpeed;
 	protected bool isGrounded;
 	protected bool canJump;
 	protected bool currentlyDashing;
-	public bool inImpactFrames;
 	protected bool shouldFindGround = true;
 	[Tooltip("This is only serialized so that velocity can be seen in the editor, don't change its value")]
 	[SerializeField] protected Vector2 velocity = new(0,0);
@@ -123,8 +105,6 @@ public class Player_Controller : MonoBehaviour
 	InputAction moveInput;
     InputAction jumpButton;
 	InputAction dashButton;
-	InputAction attackButton;
-	InputAction shootButton;
 	InputAction pauseButton;
 	protected FrameInput frameInput = new();
 	protected List<BufferedInput> bufferedInputs = new();
@@ -136,8 +116,6 @@ public class Player_Controller : MonoBehaviour
 		moveInput = InputSystem.actions.FindAction("Move");
 		jumpButton = InputSystem.actions.FindAction("Jump");
 		dashButton = InputSystem.actions.FindAction("Dash");
-		attackButton = InputSystem.actions.FindAction("Attack");
-		shootButton = InputSystem.actions.FindAction("Shoot");
 		pauseButton = InputSystem.actions.FindAction("Pause");
 
 		QualitySettings.vSyncCount = 0; // turn off v-sync
@@ -162,8 +140,6 @@ public class Player_Controller : MonoBehaviour
 		ProcessGravity();
 		ProcessMovement();
 		ProcessDash(); // this, ProcessAttack(), or ProcessRangedAttack() MUST come last in the list because they can modify the players input
-		ProcessAttack();
-		ProcessRangedAttack();
 
 		rb.velocity = velocity / (60*Time.deltaTime);
 
@@ -186,9 +162,7 @@ public class Player_Controller : MonoBehaviour
 #endregion
 
 	void IncrementFrameCounter() {
-		timeSinceLastDamage ++;
 		timeSinceLastDash ++;
-		timeSinceLastShot ++;
 	}
 
 #region Input
@@ -197,8 +171,6 @@ public class Player_Controller : MonoBehaviour
 			JumpDown = jumpButton.WasPressedThisFrame(), // checks if the jump button was pressed this frame
 			JumpHeld = jumpButton.IsPressed(), // checks if the jump button is being held
 			Move = moveInput.ReadValue<Vector2>(), // gets the user's directional input
-			AttackPressed = attackButton.WasPressedThisFrame(),
-			RangedAttackPressed = shootButton.WasPressedThisFrame(),
 			DashPressed = dashButton.WasPressedThisFrame()
 		};
 		frameInput.Move.x = Mathf.Abs(frameInput.Move.x) < stickDeadZone ? 0 : Mathf.Sign(frameInput.Move.x); // this line and the one below it add dead zones for joysticks and make inputs locked to 8 directions
@@ -307,7 +279,7 @@ public class Player_Controller : MonoBehaviour
 			return; // and don't do any more gravity calculations
 		}
 
-		if(currentlyDashing || inImpactFrames) { return; } // if the player is dashing or is being hit, don't process gravity
+		if(currentlyDashing) { return; } // if the player is dashing or is being hit, don't process gravity
 
 		downwardsAcceleration = gravity; // initialize the amount the player's downward velocity should increase by
 		targetFallSpeed = maxFallSpeed;
@@ -348,7 +320,7 @@ public class Player_Controller : MonoBehaviour
 
 #region Movement
 	void ProcessMovement() {
-		if(!currentlyDashing && !inImpactFrames) { // if the player isn't dashing or taking damage
+		if(!currentlyDashing) { // if the player isn't dashing or taking damage
 			velocity.x = Mathf.MoveTowards(velocity.x, frameInput.Move.x * walkSpeed, walkAcceleration); // accelerate or decelerate them accordingly
 		}
 		if((distanceToRightWall < colliderOffset && velocity.x > 0) || (distanceToLeftWall < colliderOffset && velocity.x < 0)) { 
@@ -376,7 +348,6 @@ public class Player_Controller : MonoBehaviour
 		if(!frameInput.DashPressed) { return; } // if the player didn't dash, don't dash
 		if(remainingDashes <= 0) { return; } // if the player is out of dashes, don't dash
 		if(currentlyDashing) { return; } // if the player is already dashing, don't dash
-		if(inImpactFrames) { return; } // if the player is currently taking damage, don't dash
 		if(timeSinceLastDash < timeBetweenDashes) { return ; } // if the player has dashed too recently, don't dash
 
 		timeSinceLastDash = 0;
@@ -465,59 +436,9 @@ public class Player_Controller : MonoBehaviour
 	// ----------------------------------------------------------------------------------------------------------------
 #endregion
 
-#region Attack
-	void ProcessAttack() {
-		if(!frameInput.AttackPressed) { return; } // if the player didn't press the attack button, don't attack
-		if(currentlyDashing || inImpactFrames) { return; } // if the player is dashing or is taking damage, don't attack
-
-		if(frameInput.Move.x == 0) { // if the player is not inputting a direction
-			frameInput.Move.x = spriteRenderer.flipX ? -1 : 1; // force an input based on which direction the character is facing
-		}
-		GameObject attack = Instantiate(attackObject, transform); // spawn in the attack object
-		attack.transform.localScale = new Vector3(frameInput.Move.x, 1, 1); // flip the attack object to be facing the same direction as the player
-		StartCoroutine(AttackTimer(attack));
-	}
-
-	IEnumerator AttackTimer(GameObject attack) {
-		yield return new WaitForSeconds(0.2f);
-		Destroy(attack);
-	}
-
-	void ProcessRangedAttack() {
-		if (!frameInput.RangedAttackPressed) { return; } // check if the player inputted a ranged attack
-		if (timeSinceLastShot < timeBetweenShots) { return; } // check if the player has shot too recently
-
-		if(frameInput.Move.x == 0) { // if the player is not inputting a direction
-			frameInput.Move.x = spriteRenderer.flipX ? -1 : 1; // set them to facing either left or right
-		}
-		timeSinceLastShot = 0; // reset the counter keeping track of when they last used a ranged attack
-
-		GameObject projectile = Instantiate(rangedAttackObject, transform.position, new Quaternion()); // spawn in the projectile
-		projectile.GetComponent<Projectile>().direction = frameInput.Move.x; // set the direction the projectile is facing
-		// StartCoroutine(ImpactFrames(projectileImpactFrames));
-	}
-#endregion
-
 #region Take Damage
 	public void TakeDamage(int damage) { // this method is called by enemies when they come into contact with the player
-		if(timeSinceLastDamage < invulnerabilityFrames) { return; } // check if the player is currently invulnerable
-		health -= damage;
-		timeSinceLastDamage = 0;
-		StartCoroutine(ImpactFrames(impactFrames)); // freeze the game for a few frames to add a powerful feeling to the attack
-		Instantiate(takeDamageParticle, transform.position, Quaternion.Euler(Vector3.zero)); // spawn in the particles
-		if(health <= 0) {
-			// spriteRenderer.color = new Color(1,0,0);
-			SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-		}
-	}
-
-	IEnumerator ImpactFrames(int numFrames) {
-		inImpactFrames = true;
-		velocity = Vector2.zero;
-		for(int i=0; i<numFrames; i++) {
-			yield return new WaitForFixedUpdate();
-		}
-		inImpactFrames = false;
+		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
 #endregion
 
@@ -526,8 +447,6 @@ public class Player_Controller : MonoBehaviour
 		public bool JumpDown; // did the player press jump this frame?
 		public bool JumpHeld; // is the player currently holding the jump button
 		public Vector2 Move; // what movements did the player input
-		public bool AttackPressed;
-		public bool RangedAttackPressed;
 		public bool DashPressed;
 	}
 
